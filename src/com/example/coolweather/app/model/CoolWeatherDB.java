@@ -26,7 +26,8 @@ public class CoolWeatherDB {
 	private SQLiteDatabase db;
 	
 	/**
-	 * 将构造方法私有化
+	 * 将构造方法私有化.
+	 * 此类是一个单例类，构造方法被私有化。
 	 * */
 	private CoolWeatherDB(Context context){
 		CoolWeatherOpenHelper dbHelper = new CoolWeatherOpenHelper(context, DB_NAME, null, VERSION);
@@ -35,6 +36,9 @@ public class CoolWeatherDB {
 	
 	/**
 	 * 获取CoolWeatherDB的实例。
+	 * 提供一个getInstance()的静态方法来获取CoolWeatherDB的实例，
+	 * 使用了synchronized修饰，这样同一时刻最多只有一个线程执行这段代码，
+	 * 保证全局范围内只会有一个CoolWeatherDB的实例。
 	 * */
 	public synchronized static CoolWeatherDB getInstance(Context context){
 		if (coolWeatherDB == null) {

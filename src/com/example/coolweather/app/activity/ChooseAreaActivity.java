@@ -14,8 +14,12 @@ import com.example.coolweather.app.util.Utility;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -25,6 +29,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+
+/**
+ * 建立ChooseAreaActivity，作为显示Province、City、County列表的Activity，
+ * 其逻辑是打开后调用queryProvinces()到数据库加载Province列表，
+ * 如果没有就执行queryFromServer方法，开启子进程到服务器查询并保存至数据库，
+ * 如果查询成功就回到主线程再次调用queryProvinces();点击上面的省，我们就进入City的查询逻辑，
+ * 依次类推，并且在查询时调用进度对话框，最后onBackPressed()方法使程序可以由县退到市再到省再退出。
+ * */
 public class ChooseAreaActivity extends Activity {
 
 	public static final int LEVEL_PROVINCE = 0;
@@ -72,6 +85,15 @@ public class ChooseAreaActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		if (prefs.getBoolean("city_selected", false)) {
+			Intent intent = new Intent(this, WeatherActivity.class);
+			startActivity(intent);
+			finish();
+			return;
+		}
+		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);//hide title bar
 		setContentView(R.layout.choose_area);//load layout
 		
@@ -93,6 +115,13 @@ public class ChooseAreaActivity extends Activity {
 				} else if (currentLevel == LEVEL_CITY) {//市级，则查询该市点击的县城
 					selectedCity = cityList.get(index);
 					queryCounties();
+				} else if (currentLevel == LEVEL_COUNTY) {
+					String countyCode = countyList.get(index).getCountyCode();
+					Intent intent = new Intent(ChooseAreaActivity.this, WeatherActivity.class);
+					intent.putExtra("county_code", countyCode);
+					startActivity(intent);
+					Log.d("MyTag", "LEVEL_COUNTY");
+					finish();
 				}
 			}
 		});
